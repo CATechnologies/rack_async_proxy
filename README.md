@@ -1,6 +1,13 @@
 # RackAsyncProxy
 
-TODO: Write a gem description
+Proxies all requests to a service end-point of your choosing asynchronously
+(Uses green threads)
+
+Very naive implementation:
+
+* Doesn't handle https requests to the end-point
+* If parent process dies, RackAsyncProxy doesn't wait, it just kill it's threads.
+* Has 30 second timeout limit for subrequests
 
 ## Installation
 
@@ -18,7 +25,13 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Example Usage:
+
+# use RackAsyncProxy do |req|
+#   if req.path =~ %r{^/remote/service.php$}
+#     URI.parse("http://remote-service-provider.com/service-end-point.php?#{req.query}")
+#   end
+# end
 
 ## Contributing
 
