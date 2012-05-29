@@ -4,7 +4,7 @@ require 'timeout'
 
 # Example Usage:
 #
-# use Rack::AsyncProxy do |req|
+# use RackAsyncProxy do |req|
 #   if req.path =~ %r{^/remote/service.php$}
 #     URI.parse("http://remote-service-provider.com/service-end-point?#{req.query}")
 #   end
@@ -14,6 +14,9 @@ require 'timeout'
 #
 # Warning doesn't handle https end points
 class RackAsyncProxy
+
+  VERSION = "0.0.1"
+
   def initialize(app, &block)
     self.class.send(:define_method, :uri_for, &block)
     @app = app
@@ -41,15 +44,19 @@ class RackAsyncProxy
     sub_request.basic_auth *uri.userinfo.split(':') if (uri.userinfo && uri.userinfo.index(':'))
 
     # We blindly kick off a request in a thread. We don't care if it finishes since this is just for testing
-    Thread.new do
+    Thread.new(uri) do |_uri|
       begin 
         Timeout.timeout(30) do
-          sub_response = Net::HTTP.start(uri.host, uri.port) do |http|
+          sub_response = Net::HTTP.start(_uri.host, _uri.port) do |http|
             http.request(sub_request)
           end
         end
       rescue Timeout::Error => timeout_error
         $stderr.puts "[Rack::AsyncProxy] Timeout::Error proxying subrequest: #{uri}"
+
+      rescue Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
+             Net::HTTPHeaderSyntaxError, Net::ProtocolError => nethttp_error
+        $stderr.puts "[Rack::AsyncProxy] #{nethttp_error.class.name} proxying subrequest: #{uri}"
       end
     end
 
