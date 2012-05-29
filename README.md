@@ -27,11 +27,11 @@ Or install it yourself as:
 
 Example Usage:
 
-# use RackAsyncProxy do |req|
-#   if req.path =~ %r{^/remote/service.php$}
-#     URI.parse("http://remote-service-provider.com/service-end-point.php?#{req.query}")
-#   end
-# end
+    use RackAsyncProxy do |req|
+      if req.path =~ %r{^/remote/service.php$}
+        URI.parse("http://remote-service-provider.com/service-end-point.php?#{req.query}")
+      end
+    end
 
 ## Contributing
 
