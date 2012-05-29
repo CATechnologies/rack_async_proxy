@@ -1,4 +1,3 @@
-require "rack_async_proxy/version"
 require "net/http"
 require 'timeout'
 
