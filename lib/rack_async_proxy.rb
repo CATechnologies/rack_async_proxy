@@ -57,6 +57,11 @@ class RackAsyncProxy
       rescue Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
              Net::HTTPHeaderSyntaxError, Net::ProtocolError => nethttp_error
         $stderr.puts "[Rack::AsyncProxy] #{nethttp_error.class.name} proxying subrequest: #{uri}"
+      rescue Exception => err
+        #We don't want any exceptions in the subrequest molesting the main request
+        #But we want to know what they are
+        $stderr.puts "[Rack::AsyncProxy] #{err.class.name} proxying subrequest: #{uri}: Message: #{err.message}"
+        $stderr.puts err.backtrace.join("\n")
       end
     end
 
