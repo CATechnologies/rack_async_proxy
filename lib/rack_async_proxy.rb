@@ -51,6 +51,7 @@ class RackAsyncProxy
           sub_response = Net::HTTP.start(_uri.host, _uri.port) do |http|
             puts "[RackAsyncProxy] requesting uri: #{uri.inspect}"
             http.read_timeout = 30 # set read timeout to 30 seconds
+            http.use_ssl = false   #staging does not use https
             response = http.request(sub_request)
             puts "[RackAsyncProxy] got from uri: #{response.code} #{response.body}"
           end
