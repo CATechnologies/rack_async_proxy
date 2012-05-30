@@ -27,8 +27,8 @@ class RackAsyncProxy
     method[0..0] = method[0..0].upcase
 
     uri = uri_for(req)
-    puts "[RackAsyncProxy] got uri: #{uri.inspect}"
     return @app.call(env) unless uri
+    puts "[RackAsyncProxy] got uri: #{uri.inspect}"
 
     sub_request = Net::HTTP.const_get(method).new("#{uri.path}#{"?" if uri.query}#{uri.query}")
 
