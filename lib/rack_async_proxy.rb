@@ -47,10 +47,9 @@ class RackAsyncProxy
 
     # We blindly kick off a request in a thread. We don't care if it finishes since this is just for testing
     Thread.new(uri) do |_uri|
-      puts "[RackAsyncProxy] new thread for uri: #{_uri.host} #{uri.port}"
       begin 
         Timeout.timeout(30) do
-          sub_response = Net::HTTP.start(_uri.host, 80) do |http|
+          sub_response = Net::HTTP.start(_uri.host, _uri.port) do |http|
             puts "[RackAsyncProxy] requesting uri: #{uri.inspect}"
             http.read_timeout = 30 # set read timeout to 30 seconds
             http.use_ssl = false   #staging does not use https
