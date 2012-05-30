@@ -1,4 +1,5 @@
 require "net/http"
+require "net/https"
 require 'timeout'
 
 # Example Usage:
