@@ -26,7 +26,9 @@ class RackAsyncProxy
     method = req.request_method.downcase
     method[0..0] = method[0..0].upcase
 
-    return @app.call(env) unless uri = uri_for(req)
+    uri = uri_for(req)
+    puts "[RackAsyncProxy] got uri: #{uri.inspect}"
+    return @app.call(env) unless uri
 
     sub_request = Net::HTTP.const_get(method).new("#{uri.path}#{"?" if uri.query}#{uri.query}")
 
@@ -47,14 +49,17 @@ class RackAsyncProxy
       begin 
         Timeout.timeout(30) do
           sub_response = Net::HTTP.start(_uri.host, _uri.port) do |http|
-            http.request(sub_request)
+            puts "[RackAsyncProxy] requesting uri: #{uri.inspect}"
+            http.read_timeout = 30 # set read timeout to 30 seconds
+            response = http.request(sub_request)
+            puts "[RackAsyncProxy] got from uri: #{response.code} #{response.body}"
           end
         end
       rescue Timeout::Error => timeout_error
         $stderr.puts "[Rack::AsyncProxy] Timeout::Error proxying subrequest: #{uri}"
 
       rescue Errno::EINVAL, Errno::ECONNRESET, EOFError, Net::HTTPBadResponse,
-             Net::HTTPHeaderSyntaxError, Net::ProtocolError => nethttp_error
+             Net::HTTPHeaderSyntaxError, Net::ProtocolError, Errno::ETIMEDOUT => nethttp_error
         $stderr.puts "[Rack::AsyncProxy] #{nethttp_error.class.name} proxying subrequest: #{uri}"
       rescue Exception => err
         #We don't want any exceptions in the subrequest molesting the main request
